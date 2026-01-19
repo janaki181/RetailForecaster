@@ -1,0 +1,160 @@
+:root {
+  --primary: #4f46e5;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.dash-header {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.role-badge {
+  background: var(--primary);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.dash-container {
+  padding: 32px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.kpi-grid {
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: var(--card);
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.kpi-card h1 {
+  font-size: 48px;
+  margin: 8px 0;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.card {
+  background: var(--card);
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+/* Column alignment and widths */
+th:nth-child(1), td:nth-child(1) { /* Name */
+  text-align: left;
+  width: 28%;
+}
+th:nth-child(2), td:nth-child(2) { /* Category */
+  text-align: left;
+  width: 28%;
+}
+th:nth-child(3), td:nth-child(3) { /* Stock */
+  text-align: right;
+  width: 18%;
+  font-variant-numeric: tabular-nums;
+}
+th:nth-child(4), td:nth-child(4) { /* Status */
+  text-align: center;
+  width: 18%;
+  text-transform: capitalize;
+}
+
+.status-ok { color: var(--success); }
+.status-low { color: var(--warning); }
+.status-critical { color: var(--danger); }
+
+form {
+  display: flex;
+  gap: 12px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  flex: 1;
+}
+
+/* Collapsible panel for Add Product */
+.collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.collapsible.open {
+  max-height: 200px; /* enough for the form */
+  margin-top: 12px;
+}
+
+#addProductForm {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.muted-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RetailForecaster | Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header class="dash-header">
+  <div>
+    <h2>Shop: FreshMart</h2>
+    <span class="role-badge">Owner</span>
+  </div>
+  <button id="logoutBtn">Logout</button>
+</header>
+
+<main class="dash-container">
+
+  <!-- KPI -->
+  <section class="kpi-grid">
+    <div class="kpi-card revenue">
+      <p>Total Revenue</p>
+      <h1 id="revenueValue">₹ 0</h1>
+      <span>Monthly</span>
+    </div>
+  </section>
+
+  <!-- Charts -->
+  <section class="chart-grid">
+    <div class="card">
+      <h3>Revenue Trend</h3>
+      <canvas id="revenueChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Top Products</h3>
+      <canvas id="productChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Add Extra Product (Collapsible) -->
+  <section class="card" id="addProductCard">
+    <div class="card-header">
+      <h3>Add an extra product</h3>
+      <button id="toggleAddProduct" type="button">Add an extra product</button>
+    </div>
+    <div id="addProductPanel" class="collapsible">
+      <form id="addProductForm">
+        <input type="text" id="addName" placeholder="Product name" required />
+        <input type="number" id="addStock" placeholder="Units in stock" min="0" step="1" required />
+        <input type="number" id="addCost" placeholder="Cost (₹)" min="0" step="0.01" required />
+        <button type="submit">Add Product</button>
+      </form>
+    </div>
+  </section>
+<br>
+  <!-- Products -->
+  <section class="card">
+    <div class="card-header">
+      <h3>Products</h3>
+      <button id="toggleProducts">View All</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="productTable"></tbody>
+    </table>
+  </section>
+<br>
+  <!-- Sales Update -->
+  <section class="card">
+    <h3>Update Sales</h3>
+    <form id="salesForm">
+      <input type="text" placeholder="Product name" required />
+      <input type="number" placeholder="Units sold" required />
+      <button type="submit">Update</button>
+    </form>
+  </section>
+
+</main>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

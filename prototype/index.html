@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetailForecaster - Smart Inventory Intelligence</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Sticky Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <span class="logo-text">RetailForecaster</span>
+            </div>
+            <nav class="nav">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#impact" class="nav-link">Impact</a>
+                <a href="#dashboard" class="nav-link">Dashboard</a>
+                <a href="#authOverlay" class="nav-link" id="openAuth">Login</a>
+
+            </nav>
+        </div>
+    </header>
+
+    <!-- Background Decorations -->
+    <div class="bg-decoration circle-1"></div>
+    <div class="bg-decoration circle-2"></div>
+    <div class="bg-decoration circle-3"></div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">RetailForecaster</h1>
+                <p class="hero-tagline">Stop guessing. Start predicting.</p>
+                <p class="hero-description">
+                    Retail businesses lose millions to stockouts and overstocking. 
+                    RetailForecaster transforms chaos into clarity with real-time analytics 
+                    and intelligent demand forecasting.
+                </p>
+                <button class="cta-button">Login/Sign Up</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Aim / Purpose Section -->
+    <section id="aim" class="aim-section">
+        <div class="container">
+            <h2 class="section-title">Our Mission</h2>
+            <p class="section-subtitle">Empowering retail businesses with data-driven inventory intelligence</p>
+            
+            <div class="aim-grid">
+                <div class="aim-card">
+                    <div class="aim-icon">🎯</div>
+                    <h3>Reduce Stockouts</h3>
+                    <p>Never miss a sale. Predictive analytics ensure products are available when customers need them.</p>
+                </div>
+                <div class="aim-card">
+                    <div class="aim-icon">💰</div>
+                    <h3>Avoid Overstocking</h3>
+                    <p>Free up capital. Intelligent forecasting prevents excess inventory and reduces holding costs.</p>
+                </div>
+                <div class="aim-card">
+                    <div class="aim-icon">📈</div>
+                    <h3>Improve Planning</h3>
+                    <p>Make smarter decisions. Advanced analytics reveal trends and patterns invisible to spreadsheets.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Showcase (Moving Flex) -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need to transform your retail operations</p>
+        </div>
+        
+        <div class="features-slider">
+            <div class="features-track">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Trend Analysis</h3>
+                    <p>Visualize revenue patterns with interactive charts and identify growth opportunities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔮</div>
+                    <h3>Demand Forecasting</h3>
+                    <p>ML-powered predictions help you stock the right products at the right time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">❤️</div>
+                    <h3>Inventory Health</h3>
+                    <p>Monitor stock levels in real-time with automated alerts and insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>Low Stock Alerts</h3>
+                    <p>Get notified before stockouts happen. Automated reorder recommendations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Top Products</h3>
+                    <p>Identify best-sellers and optimize your product mix for maximum revenue.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Revenue Analytics</h3>
+                    <p>Track performance across categories with drill-down capabilities.</p>
+                </div>
+                <!-- Duplicate for infinite scroll effect -->
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Trend Analysis</h3>
+                    <p>Visualize revenue patterns with interactive charts and identify growth opportunities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔮</div>
+                    <h3>Demand Forecasting</h3>
+                    <p>ML-powered predictions help you stock the right products at the right time.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Trend Analysis</h3>
+                    <p>Visualize revenue patterns with interactive charts and identify growth opportunities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔮</div>
+                    <h3>Demand Forecasting</h3>
+                    <p>ML-powered predictions help you stock the right products at the right time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">❤️</div>
+                    <h3>Inventory Health</h3>
+                    <p>Monitor stock levels in real-time with automated alerts and insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>Low Stock Alerts</h3>
+                    <p>Get notified before stockouts happen. Automated reorder recommendations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Top Products</h3>
+                    <p>Identify best-sellers and optimize your product mix for maximum revenue.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Revenue Analytics</h3>
+                    <p>Track performance across categories with drill-down capabilities.</p>
+                </div>
+                <!-- Duplicate for infinite scroll effect -->
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Trend Analysis</h3>
+                    <p>Visualize revenue patterns with interactive charts and identify growth opportunities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔮</div>
+                    <h3>Demand Forecasting</h3>
+                    <p>ML-powered predictions help you stock the right products at the right time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact / Value Section -->
+    <section id="impact" class="impact-section">
+        <div class="container">
+            <h2 class="section-title light">Business Impact That Matters</h2>
+            <p class="section-subtitle light">Real numbers from real retail transformations</p>
+            
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <div class="impact-number">+25%</div>
+                    <div class="impact-label">Revenue Increase</div>
+                    <p>Optimized inventory levels drive more sales and customer satisfaction</p>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-number">-30%</div>
+                    <div class="impact-label">Holding Costs</div>
+                    <p>Reduce excess inventory and free up working capital for growth</p>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-number">-40%</div>
+                    <div class="impact-label">Stockouts</div>
+                    <p>Predictive analytics ensure products are available when needed</p>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-number">5x</div>
+                    <div class="impact-label">Faster Decisions</div>
+                    <p>Real-time dashboards replace hours of manual spreadsheet work</p>
+                </div>
+            </div>
+
+            <div class="value-statement">
+                <p class="value-text">
+                    "RetailForecaster transformed how we manage inventory. 
+                    We've eliminated guesswork and increased profits while reducing waste."
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Preview -->
+    <section id="dashboard" class="dashboard-section">
+        <div class="container">
+            <h2 class="section-title">Experience the Dashboard</h2>
+            <p class="section-subtitle">Intuitive, powerful, and built for real-world retail</p>
+            
+            <div class="dashboard-preview">
+                <div class="dashboard-mockup">
+                    <div class="mockup-header">
+                        <div class="mockup-dot"></div>
+                        <div class="mockup-dot"></div>
+                        <div class="mockup-dot"></div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="preview-stats">
+                            <div class="preview-stat">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Revenue</span>
+                                    <span class="stat-value">₹2.45L</span>
+                                </div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="stat-icon">📦</div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Products</span>
+                                    <span class="stat-value">1,234</span>
+                                </div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="stat-icon">⚠️</div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Low Stock</span>
+                                    <span class="stat-value">23</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-chart">
+                            <canvas id="previewChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="cta-button secondary">Login/Sign Up</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container", margint-left="4000px">
+            <div class="footer-brand">
+                <div class="logo">
+                    <span class="logo-icon">📊</span>
+                    <span class="logo-text">RetailForecaster</span>
+                </div>
+                <p class="footer-tagline">Built for real-world retail intelligence</p>
+            </div>
+            
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#impact">Impact</a>
+                    <a href="#dashboard">Dashboard</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 RetailForecaster. Production-ready inventory intelligence.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="authOverlay" aria-hidden="true">
+  <div class="auth-modal" role="dialog" aria-modal="true">
+
+    <button class="auth-close" id="closeAuth">&times;</button>
+
+    <div class="auth-header">
+      <h2 id="authTitle">Welcome Back</h2>
+      <p id="authSubtitle">Log in to continue to RetailForecaster</p>
+    </div>
+
+    <form class="auth-form" id="authForm">
+
+      <div class="form-group">
+        <label>User ID</label>
+        <input type="text" required />
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" required />
+      </div>
+
+      <div class="form-group password-group">
+        <label>Password</label>
+        <input type="password" id="passwordInput" required />
+        <span class="toggle-password" id="togglePassword">👁</span>
+      </div>
+
+      <div class="form-group hidden" id="confirmPasswordGroup">
+        <label>Confirm Password</label>
+        <input type="password" />
+      </div>
+
+      <button type="submit" class="auth-button" id="authButton">
+        Log In
+      </button>
+    </form>
+
+    <p class="auth-toggle">
+      Don’t have an account?
+      <span id="toggleAuth">Sign up</span>
+    </p>
+
+  </div>
+</div>
+</body>
+</html>
