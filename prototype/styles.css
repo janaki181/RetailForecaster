@@ -4,6 +4,12 @@
     padding: 0;
     box-sizing: border-box;
 }
+.error-text {
+  display: none;
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+}
 
 :root {
     /* Premium Color Palette */
@@ -174,6 +180,11 @@ body {
     align-items: center;
     padding-top: 80px;
     position: relative;
+
+    background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPAptybpBee9kzEHmWRr8EqDxskePzIsuRFw&s");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .hero-container {
