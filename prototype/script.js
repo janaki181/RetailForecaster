@@ -272,19 +272,17 @@ document.addEventListener('DOMContentLoaded', () => {
         authForm.onsubmit = (e) => {
             e.preventDefault();
             
-            // Get User ID value
+            // Get User ID input
+            const userIdInput = authForm.querySelector('input[type="text"]');
             const userId = userIdInput.value.trim();
             
-            // Validate: User ID must be at least 3 characters
+            // Validate User ID minimum 3 characters
             if (userId.length < 3) {
-                userIdError.style.display = 'block';
-                userIdError.textContent = 'User ID must be at least 3 characters';
-                userIdInput.style.border = '2px solid red';
-                return; // Stop - don't redirect
+                alert('User ID must be at least 3 characters long.');
+                userIdInput.focus();
+                return;
             }
             
-            // Validation passed - proceed to dashboard
-            userIdError.style.display = 'none';
             localStorage.setItem('rf_auth', 'true');
             localStorage.setItem('rf_user', userId);
             window.location.href = 'dashboard.html';

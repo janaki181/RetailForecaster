@@ -179,10 +179,11 @@ body {
     display: flex;
     align-items: center;
     padding-top: 80px;
-    position: relative;
     background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPAptybpBee9kzEHmWRr8EqDxskePzIsuRFw&s");
-    background-repeat: no-repeat;
+    position: relative;
     background-size: cover;
+    background-position: center;
+    /* background-repeat: no-repeat; */
 }
 
 .hero-container {
