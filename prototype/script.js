@@ -253,6 +253,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authForm) {
         authForm.onsubmit = (e) => {
             e.preventDefault();
+            
+            // Get User ID input
+            const userIdInput = authForm.querySelector('input[type="text"]');
+            const userId = userIdInput.value.trim();
+            
+            // Validate User ID minimum 3 characters
+            if (userId.length < 3) {
+                alert('User ID must be at least 3 characters long.');
+                userIdInput.focus();
+                return;
+            }
+            
             localStorage.setItem('rf_auth', 'true');
             // Redirect to protected dashboard page
             window.location.href = 'dashboard.html';
