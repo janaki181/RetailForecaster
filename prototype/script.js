@@ -91,6 +91,21 @@ document.querySelectorAll('.cta-button').forEach(button => {
     });
 });
 
+const userIdInput = document.getElementById('userIdInput');
+const userIdError = document.getElementById('userIdError');
+
+userIdInput.addEventListener('input', function () {
+    const value = this.value.trim();
+
+    if (value.length > 0 && value.length < 3) {
+        userIdError.style.display = 'block';
+        this.style.border = '2px solid red';
+    } else {
+        userIdError.style.display = 'none';
+        this.style.border = '2px solid #ccc';
+    }
+});
+
 // Add ripple animation
 const style = document.createElement('style');
 style.textContent = `
