@@ -4,6 +4,12 @@
     padding: 0;
     box-sizing: border-box;
 }
+.error-text {
+  display: none;
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+}
 
 :root {
     /* Premium Color Palette */
