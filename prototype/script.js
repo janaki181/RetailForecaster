@@ -75,18 +75,11 @@ document.querySelectorAll('.cta-button').forEach(button => {
         
         setTimeout(() => ripple.remove(), 600);
         
-        // Scroll to dashboard or (for login) open modal via separate handler; avoid demo alert for login/sign up
-        const text = this.textContent.trim();
-        if (text.includes('Dashboard')) {
-            document.querySelector('#dashboard').scrollIntoView({ behavior: 'smooth' });
-        } else if (text.includes('Login') || text.includes('Sign Up')) {
-            const overlay = document.getElementById('authOverlay');
-            if (overlay) {
-              overlay.classList.add('active');
-              document.body.classList.add('no-scroll');
-            }
-        } else {
-            alert('Feature coming soon! This is a demo landing page.');
+        // Open auth modal for all login/signup buttons
+        const overlay = document.getElementById('authOverlay');
+        if (overlay) {
+            overlay.classList.add('active');
+            document.body.classList.add('no-scroll');
         }
     });
 });
@@ -94,17 +87,19 @@ document.querySelectorAll('.cta-button').forEach(button => {
 const userIdInput = document.getElementById('userIdInput');
 const userIdError = document.getElementById('userIdError');
 
-userIdInput.addEventListener('input', function () {
-    const value = this.value.trim();
+if (userIdInput && userIdError) {
+    userIdInput.addEventListener('input', function () {
+        const value = this.value.trim();
 
-    if (value.length > 0 && value.length < 3) {
-        userIdError.style.display = 'block';
-        this.style.border = '2px solid red';
-    } else {
-        userIdError.style.display = 'none';
-        this.style.border = '2px solid #ccc';
-    }
-});
+        if (value.length > 0 && value.length <= 3) {
+            userIdError.style.display = 'block';
+            this.style.border = '2px solid red';
+        } else {
+            userIdError.style.display = 'none';
+            this.style.border = '';
+        }
+    });
+}
 
 // Add ripple animation
 const style = document.createElement('style');
@@ -273,16 +268,17 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             // Get User ID input
-            const userIdInput = authForm.querySelector('input[type="text"]');
             const userId = userIdInput.value.trim();
             
-            // Validate User ID minimum 3 characters
-            if (userId.length < 3) {
-                alert('User ID must be at least 3 characters long.');
+            // Validate User ID must be more than 3 characters
+            if (userId.length <= 3) {
+                userIdError.style.display = 'block';
+                userIdInput.style.border = '2px solid red';
                 userIdInput.focus();
                 return;
             }
             
+            // Success - store user and redirect to dashboard
             localStorage.setItem('rf_auth', 'true');
             localStorage.setItem('rf_user', userId);
             window.location.href = 'dashboard.html';
