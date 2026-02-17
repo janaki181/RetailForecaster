@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function AuthModal({ isOpen, onClose }) {
+function AuthModal({ isOpen, onClose, onLoginSuccess }) {
+  const navigate = useNavigate();
+
   const [isSignup, setIsSignup] = useState(false);
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
@@ -9,21 +12,45 @@ function AuthModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,12}$/;
+
   function handleSubmit(e) {
     e.preventDefault();
+
+    // Basic validation
+    if (!passwordPattern.test(password)) {
+      alert(
+        "Password must be 8-12 characters with at least one uppercase letter, one lowercase letter, and one symbol."
+      );
+      return;
+    }
+
     if (isSignup && password !== confirmPassword) {
       alert("Passwords do not match.");
       return;
     }
+
+    // Save auth
     localStorage.setItem("rf_auth", "true");
+
+    // Notify App.jsx
+    if (onLoginSuccess) {
+      onLoginSuccess();
+    }
+
+    // Close modal
     onClose();
-    alert("Logged in successfully 🚀");
+
+    // Navigate to dashboard
+    navigate("/dashboard");
   }
 
   return (
     <div className="auth-overlay active">
       <div className="auth-modal">
-        <button className="auth-close" onClick={onClose}>&times;</button>
+        <button className="auth-close" onClick={onClose}>
+          &times;
+        </button>
 
         <div className="auth-header">
           <h2>{isSignup ? "Create Account" : "Welcome Back"}</h2>
@@ -61,6 +88,10 @@ function AuthModal({ isOpen, onClose }) {
             <input
               type="password"
               required
+              minLength={8}
+              maxLength={12}
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,12}"
+              title="8-12 characters with at least one uppercase letter, one lowercase letter, and one symbol."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -72,19 +103,27 @@ function AuthModal({ isOpen, onClose }) {
               <input
                 type="password"
                 required
+                minLength={8}
+                maxLength={12}
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,12}"
+                title="8-12 characters with at least one uppercase letter, one lowercase letter, and one symbol."
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
               />
             </div>
           )}
 
-          <button className="auth-button">
+          <button type="submit" className="auth-button">
             {isSignup ? "Create Account" : "Log In"}
           </button>
         </form>
 
         <p className="auth-toggle">
-          {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
+          {isSignup
+            ? "Already have an account?"
+            : "Don’t have an account?"}{" "}
           <span onClick={() => setIsSignup(!isSignup)}>
             {isSignup ? "Log in" : "Sign up"}
           </span>
