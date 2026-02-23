@@ -87,3 +87,13 @@
   background: rgba(0, 0, 0, 0.4);
   z-index: 999;
 }
+.logout {
+  margin-top: auto;
+  background: #ef4444;   /* optional red background */
+  color: black;          /* 👈 text black */
+}
+
+.logout:hover {
+  background: #dc2626;
+  color: black;          /* keep black on hover */
+}
