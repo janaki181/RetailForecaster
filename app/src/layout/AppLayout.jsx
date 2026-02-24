@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import Footer from "../components/Footer";
 
 function AppLayout() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +28,7 @@ function AppLayout() {
         </button>
 
         <Outlet />
+        <Footer />
       </div>
     </>
   );

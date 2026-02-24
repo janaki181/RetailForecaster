@@ -12,6 +12,12 @@ import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
 
 import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Sales from "./pages/Sales";
+import Analytics from "./pages/Analytics";
+import Inventory from "./pages/Inventory";
+import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 import AppLayout from "./layout/AppLayout";
 
 function App() {
@@ -67,9 +73,12 @@ function App() {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* Later you can add more routes here */}
-        {/* <Route path="/products" element={<Products />} /> */}
-        {/* <Route path="/sales" element={<Sales />} /> */}
+        <Route path="/products" element={<Products />} />
+        <Route path="/sales" element={<Sales />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
     </Routes>
   );
