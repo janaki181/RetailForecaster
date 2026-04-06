@@ -2,56 +2,55 @@ import "./App.css";
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import Aim from "./components/Aim";
-import Features from "./components/Features";
-import Impact from "./components/Impact";
+import Header          from "./components/Header";
+import Hero            from "./components/Hero";
+import Aim             from "./components/Aim";
+import Features        from "./components/Features";
+import Impact          from "./components/Impact";
 import DashboardPreview from "./components/DashboardPreview";
-import Footer from "./components/Footer";
-import AuthModal from "./components/AuthModal";
+import Footer          from "./components/Footer";
+import AuthModal       from "./components/AuthModal";
 
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Sales from "./pages/Sales";
-import Analytics from "./pages/Analytics";
-import Inventory from "./pages/Inventory";
-import Users from "./pages/Users";
-import Settings from "./pages/Settings";
-import AppLayout from "./layout/AppLayout";
+import AppLayout  from "./layout/AppLayout";
+import Dashboard  from "./pages/Dashboard";
+import Products   from "./pages/Products";
+import Sales      from "./pages/Sales";
+import Analytics  from "./pages/Analytics";
+import Inventory  from "./pages/Inventory";
+import Users      from "./pages/Users";
+import Settings   from "./pages/Settings";
 
 function App() {
-  const [showAuth, setShowAuth] = useState(false);
+  const [showAuth, setShowAuth]           = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const auth = localStorage.getItem("rf_auth");
-    if (auth === "true") {
+    // Restore session on page refresh
+    if (localStorage.getItem("rf_auth") === "true") {
       setIsAuthenticated(true);
     }
   }, []);
 
-  const openAuth = () => setShowAuth(true);
+  const openAuth  = () => setShowAuth(true);
   const closeAuth = () => setShowAuth(false);
 
   return (
     <Routes>
-      {/* LANDING PAGE */}
+      {/* ── LANDING PAGE ─────────────────────────────── */}
       <Route
         path="/"
         element={
           isAuthenticated ? (
-            <Navigate to="/dashboard" />
+            <Navigate to="/dashboard" replace />
           ) : (
             <>
               <Header onLoginClick={openAuth} />
-              <Hero onLoginClick={openAuth} />
+              <Hero    onLoginClick={openAuth} />
               <Aim />
               <Features />
               <Impact />
               <DashboardPreview onLoginClick={openAuth} />
               <Footer />
-
               <AuthModal
                 isOpen={showAuth}
                 onClose={closeAuth}
@@ -62,102 +61,22 @@ function App() {
         }
       />
 
-      {/* PROTECTED ROUTES WITH SIDEBAR */}
+      {/* ── PROTECTED APP ROUTES ─────────────────────── */}
       <Route
         element={
-          isAuthenticated ? (
-            <AppLayout />
-          ) : (
-            <Navigate to="/" />
-          )
+          isAuthenticated ? <AppLayout /> : <Navigate to="/" replace />
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/sales" element={<Sales />} />
+        <Route path="/products"  element={<Products />}  />
+        <Route path="/sales"     element={<Sales />}     />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/inventory" element={<Inventory />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/users"     element={<Users />}     />
+        <Route path="/settings"  element={<Settings />}  />
       </Route>
     </Routes>
   );
 }
 
 export default App;
-
-// import { useState, useEffect } from "react";
-// import { Routes, Route, Navigate } from "react-router-dom";
-
-// import Header from "./components/Header";
-// import Hero from "./components/Hero";
-// import Aim from "./components/Aim";
-// import Features from "./components/Features";
-// import Impact from "./components/Impact";
-// import DashboardPreview from "./components/DashboardPreview";
-// import Footer from "./components/Footer";
-// import AuthModal from "./components/AuthModal";
-
-// import Dashboard from "./pages/Dashboard";
-
-// function App() {
-//   const [showAuth, setShowAuth] = useState(false);
-//   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-//   // Check login on refresh
-//   useEffect(() => {
-//     const auth = localStorage.getItem("rf_auth");
-//     if (auth === "true") {
-//       setIsAuthenticated(true);
-//     }
-//   }, []);
-
-//   const openAuth = () => setShowAuth(true);
-//   const closeAuth = () => setShowAuth(false);
-
-//   return (
-//     <Routes>
-
-//       {/* LANDING PAGE */}
-//       <Route
-//         path="/"
-//         element={
-//           isAuthenticated ? (
-//             <Navigate to="/dashboard" />
-//           ) : (
-//             <>
-//               <Header onLoginClick={openAuth} />
-//               <Hero onLoginClick={openAuth} />
-//               <Aim />
-//               <Features />
-//               <Impact />
-//               <DashboardPreview onLoginClick={openAuth} />
-//               <Footer />
-
-//               <AuthModal
-//                 isOpen={showAuth}
-//                 onClose={closeAuth}
-//                 onLoginSuccess={() => setIsAuthenticated(true)}
-//               />
-//             </>
-//           )
-//         }
-//       />
-
-//       {/* PROTECTED DASHBOARD */}
-//       <Route
-//         path="/dashboard"
-//         element={
-//           isAuthenticated ? (
-//             <Dashboard />
-//           ) : (
-//             <Navigate to="/" />
-//           )
-//         }
-//       />
-
-//     </Routes>
-//   );
-// }
-
-// export default App;

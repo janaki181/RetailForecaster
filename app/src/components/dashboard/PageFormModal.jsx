@@ -7,6 +7,7 @@ function PageFormModal({
   description,
   fields = [],
   submitLabel = "Save",
+  onSubmit,
 }) {
   const [formData, setFormData] = useState({});
 
@@ -35,8 +36,11 @@ function PageFormModal({
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (onSubmit) {
+      await onSubmit(formData);
+    }
     onClose();
   };
 

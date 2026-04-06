@@ -1,82 +1,236 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/dashboard.css";
-import PageFormModal from "../components/dashboard/PageFormModal";
+import { api } from "../api/client";
 
-const userRows = [
-  { name: "Ava Thompson", role: "Store Manager", status: "Active", lastSeen: "5 min ago" },
-  { name: "Liam Carter", role: "Inventory Lead", status: "Active", lastSeen: "12 min ago" },
-  { name: "Emma Green", role: "Sales Associate", status: "Away", lastSeen: "34 min ago" },
-  { name: "Lucas Hall", role: "Analyst", status: "Active", lastSeen: "1 hour ago" },
-];
+// FIXED: all data live from backend — no hardcoded user rows
+
+const STATUS_STYLE = {
+  Active: { background: "#dcfce7", color: "#15803d" },
+  Away:   { background: "#fef9c3", color: "#854d0e" },
+  Offline:{ background: "#f3f4f6", color: "#6b7280" },
+};
+
+function fmtLastSeen(ts) {
+  if (!ts) return "—";
+  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (diff < 60)   return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
 function Users() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [summary, setSummary] = useState(null);
+  const [users,   setUsers]   = useState([]);
+  const [notes,   setNotes]   = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [showForm, setShowForm] = useState(false);
+  const [saving,   setSaving]   = useState(false);
+  const [formErr,  setFormErr]  = useState("");
+  const [inviteOk, setInviteOk] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", role: "Sales Associate" });
+
+  const ROLES = ["Admin", "Store Manager", "Inventory Lead", "Sales Associate", "Analyst"];
+
+  const load = () => {
+    setLoading(true);
+    Promise.all([
+      api.get("/api/users/summary"),
+      api.get("/api/users"),
+      api.get("/api/users/activity-notes"),
+    ])
+      .then(([s, u, n]) => {
+        setSummary(s);
+        setUsers(u);
+        setNotes(n.notes || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormErr("");
+    setInviteOk("");
+    setSaving(true);
+    try {
+      const res = await api.post("/api/users/invite", form);
+      setInviteOk(
+        `✅ User invited! Temp password: ${res.temp_password}. Share this with them.`
+      );
+      setForm({ name: "", email: "", role: "Sales Associate" });
+      load();
+    } catch (err) {
+      setFormErr(err.message || "Failed to invite user.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="dashboard page-shell">
+      {/* ── Header ─────────────────────────────── */}
       <div className="page-header">
         <div>
           <h2>Users</h2>
           <p className="topbar-subtitle">Team access, activity, and engagement</p>
         </div>
-        <button type="button" className="page-action" onClick={() => setIsFormOpen(true)}>Invite User</button>
+        <button className="page-action" onClick={() => { setShowForm(true); setInviteOk(""); setFormErr(""); }}>
+          Invite User
+        </button>
       </div>
 
+      {/* ── KPI Cards ──────────────────────────── */}
       <div className="kpi-grid page-kpi-grid">
-        <div className="kpi-card"><h4>Total Users</h4><strong>84</strong></div>
-        <div className="kpi-card"><h4>Active Today</h4><strong>47</strong></div>
-        <div className="kpi-card"><h4>New This Week</h4><strong>9</strong></div>
-        <div className="kpi-card"><h4>Admins</h4><strong>6</strong></div>
+        <div className="kpi-card">
+          <h4>Total Users</h4>
+          <strong>{loading ? "—" : summary?.total_users ?? "—"}</strong>
+        </div>
+        <div className="kpi-card">
+          <h4>Active Today</h4>
+          <strong>{loading ? "—" : summary?.active_today ?? "—"}</strong>
+        </div>
+        <div className="kpi-card">
+          <h4>New This Week</h4>
+          <strong>{loading ? "—" : summary?.new_this_week ?? "—"}</strong>
+        </div>
+        <div className="kpi-card">
+          <h4>Admins</h4>
+          <strong>{loading ? "—" : summary?.admins ?? "—"}</strong>
+        </div>
       </div>
 
+      {/* ── Main Grid ──────────────────────────── */}
       <div className="page-grid">
+        {/* Team Directory */}
         <div className="card">
           <h3>Team Directory</h3>
-          <table className="table-clean">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Last Seen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {userRows.map((user) => (
-                <tr key={user.name}>
-                  <td>{user.name}</td>
-                  <td>{user.role}</td>
-                  <td><span className="status-pill">{user.status}</span></td>
-                  <td>{user.lastSeen}</td>
+          {loading ? (
+            <p style={{ color: "#9ca3af", fontSize: 13, marginTop: 8 }}>Loading…</p>
+          ) : (
+            <table className="table-clean" style={{ marginTop: 10 }}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Last Seen</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((u, i) => {
+                  const st = STATUS_STYLE[u.status] || STATUS_STYLE.Offline;
+                  return (
+                    <tr key={i}>
+                      <td>{u.name}</td>
+                      <td style={{ fontSize: 12, color: "#6b7280" }}>{u.email}</td>
+                      <td>{u.role}</td>
+                      <td>
+                        <span style={{
+                          ...st, padding: "3px 10px",
+                          borderRadius: 999, fontSize: 12, fontWeight: 600,
+                        }}>
+                          {u.status}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: 12, color: "#9ca3af" }}>
+                        {fmtLastSeen(u.last_seen)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
+        {/* Activity Notes */}
         <div className="card">
           <h3>User Activity Notes</h3>
-          <ul className="insight-list">
-            <li>Manager logins increase during morning stock audits.</li>
-            <li>Analyst users export weekly reports every Monday afternoon.</li>
-            <li>Support requests are down after last permission update.</li>
-          </ul>
+          {notes.length === 0 ? (
+            <p style={{ color: "#9ca3af", fontSize: 13, marginTop: 8 }}>
+              {loading ? "Loading…" : "No notes available."}
+            </p>
+          ) : (
+            <ul className="insight-list">
+              {notes.map((n, i) => <li key={i}>{n}</li>)}
+            </ul>
+          )}
         </div>
       </div>
 
-      <PageFormModal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        title="Invite User"
-        description="Enter user details to draft an invitation."
-        submitLabel="Create Draft Invite"
-        fields={[
-          { name: "fullName", label: "Full Name", placeholder: "Enter full name" },
-          { name: "email", label: "Email", type: "email", placeholder: "name@company.com" },
-          { name: "role", label: "Role", placeholder: "e.g. Store Manager" },
-          { name: "message", label: "Message", type: "textarea", placeholder: "Optional invitation note" },
-        ]}
-      />
+      {/* ── Invite User Modal ──────────────────── */}
+      {showForm && (
+        <div className="page-form-overlay">
+          <div className="page-form-modal">
+            <div className="page-form-header">
+              <h3>Invite User</h3>
+              <button className="page-form-close" onClick={() => setShowForm(false)}>Close</button>
+            </div>
+            <p className="page-form-description">
+              A temporary password will be generated. Share it with the new team member.
+            </p>
+
+            {inviteOk ? (
+              <div>
+                <p style={{ color: "#15803d", fontWeight: 600, fontSize: 13, marginBottom: 16 }}>
+                  {inviteOk}
+                </p>
+                <div className="page-form-actions">
+                  <button className="page-form-cancel" onClick={() => setShowForm(false)}>Close</button>
+                  <button className="page-form-submit" onClick={() => setInviteOk("")}>Invite Another</button>
+                </div>
+              </div>
+            ) : (
+              <form className="page-form-body" onSubmit={handleSubmit}>
+                <label className="page-form-field">
+                  <span>Full Name *</span>
+                  <input
+                    type="text" required value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="Enter full name"
+                  />
+                </label>
+                <label className="page-form-field">
+                  <span>Email *</span>
+                  <input
+                    type="email" required value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    placeholder="name@company.com"
+                  />
+                </label>
+                <label className="page-form-field">
+                  <span>Role</span>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                    style={{ padding: "10px 12px", border: "1px solid #cbd5e1", borderRadius: 8 }}
+                  >
+                    {ROLES.map((r) => <option key={r}>{r}</option>)}
+                  </select>
+                </label>
+
+                {formErr && (
+                  <p style={{ color: "#ef4444", fontSize: 13 }}>{formErr}</p>
+                )}
+
+                <div className="page-form-actions">
+                  <button type="button" className="page-form-cancel" onClick={() => setShowForm(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="page-form-submit" disabled={saving}>
+                    {saving ? "Inviting…" : "Send Invite"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

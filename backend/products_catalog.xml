@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+  <product>
+    <name>Sample Denim Jacket</name>
+    <category>Clothing</category>
+    <gender>Unisex</gender>
+    <size>L</size>
+    <color>Blue</color>
+    <price>2499</price>
+    <cost_price>1400</cost_price>
+    <stock>120</stock>
+    <min_stock>25</min_stock>
+    <location>A1</location>
+    <season_tag>winter</season_tag>
+  </product>
+  <product>
+    <name>Sample Skin Serum</name>
+    <category>Beauty</category>
+    <gender>Unisex</gender>
+    <size>One Size</size>
+    <color>NA</color>
+    <price>899</price>
+    <cost_price>420</cost_price>
+    <stock>140</stock>
+    <min_stock>30</min_stock>
+    <location>B1</location>
+    <season_tag>all-season</season_tag>
+  </product>
+</catalog>

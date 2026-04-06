@@ -1,84 +1,165 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/dashboard.css";
-import PageFormModal from "../components/dashboard/PageFormModal";
+import { api, downloadFile } from "../api/client";
 
-const orders = [
-  { id: "ORD-9012", customer: "Mia Johnson", channel: "Online", value: "$248", status: "Delivered" },
-  { id: "ORD-9031", customer: "Arjun Patel", channel: "In-Store", value: "$119", status: "Packed" },
-  { id: "ORD-9068", customer: "Sophia Lee", channel: "Online", value: "$342", status: "Shipped" },
-  { id: "ORD-9099", customer: "Noah Walker", channel: "Marketplace", value: "$86", status: "Processing" },
-];
+// FIXED: Export button triggers real CSV download, not a useless modal
+// FIXED: all data live from backend
+
+const STATUS_STYLE = {
+  Delivered:  { background: "#dcfce7", color: "#15803d" },
+  Shipped:    { background: "#dbeafe", color: "#1d4ed8" },
+  Packed:     { background: "#fef9c3", color: "#854d0e" },
+  Processing: { background: "#f3f4f6", color: "#475569" },
+};
+
+const fmtRs = (n) =>
+  "Rs " + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 
 function Sales() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [summary,  setSummary]  = useState(null);
+  const [orders,   setOrders]   = useState([]);
+  const [channel,  setChannel]  = useState({ breakdown_pct: {}, insights: [] });
+  const [loading,  setLoading]  = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      api.get("/api/sales/summary"),
+      api.get("/api/sales/recent"),
+      api.get("/api/sales/channel-mix"),
+    ])
+      .then(([s, o, c]) => {
+        setSummary(s);
+        setOrders(o);
+        setChannel(c);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleExport = () => downloadFile("/api/reports/export/csv", "sales_report.csv");
 
   return (
     <div className="dashboard page-shell">
+      {/* ── Header ─────────────────────────────── */}
       <div className="page-header">
         <div>
           <h2>Sales</h2>
           <p className="topbar-subtitle">Daily orders, channels, and conversion outcomes</p>
         </div>
-        <button type="button" className="page-action" onClick={() => setIsFormOpen(true)}>Export Report</button>
+        <button className="page-action" onClick={handleExport}>
+          Export CSV
+        </button>
       </div>
 
+      {/* ── KPI Cards ──────────────────────────── */}
       <div className="kpi-grid page-kpi-grid">
-        <div className="kpi-card"><h4>Today Revenue</h4><strong>$18,420</strong></div>
-        <div className="kpi-card"><h4>Orders</h4><strong>264</strong></div>
-        <div className="kpi-card"><h4>Avg. Order Value</h4><strong>$69.77</strong></div>
-        <div className="kpi-card"><h4>Conversion Rate</h4><strong>4.9%</strong></div>
+        <div className="kpi-card">
+          <h4>Today Revenue</h4>
+          <strong>{loading ? "—" : fmtRs(summary?.today_revenue ?? 0)}</strong>
+        </div>
+        <div className="kpi-card">
+          <h4>Orders</h4>
+          <strong>{loading ? "—" : summary?.orders_today ?? "—"}</strong>
+        </div>
+        <div className="kpi-card">
+          <h4>Avg. Order Value</h4>
+          <strong>{loading ? "—" : fmtRs(summary?.avg_order_value ?? 0)}</strong>
+        </div>
+        <div className="kpi-card">
+          <h4>Conversion Rate</h4>
+          <strong>{loading ? "—" : `${summary?.conversion_rate ?? "—"}%`}</strong>
+        </div>
       </div>
 
+      {/* ── Main Grid ──────────────────────────── */}
       <div className="page-grid">
+        {/* Recent Orders */}
         <div className="card">
           <h3>Recent Orders</h3>
-          <table className="table-clean">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Channel</th>
-                <th>Value</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.id}</td>
-                  <td>{order.customer}</td>
-                  <td>{order.channel}</td>
-                  <td>{order.value}</td>
-                  <td><span className="status-pill">{order.status}</span></td>
+          {loading ? (
+            <p style={{ color: "#9ca3af", fontSize: 13, marginTop: 8 }}>Loading…</p>
+          ) : orders.length === 0 ? (
+            <p style={{ color: "#9ca3af", fontSize: 13, marginTop: 8 }}>No orders yet.</p>
+          ) : (
+            <table className="table-clean" style={{ marginTop: 10 }}>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Product</th>
+                  <th>Channel</th>
+                  <th>Value</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map((o) => {
+                  const st = STATUS_STYLE[o.status] || {};
+                  return (
+                    <tr key={o.order_id}>
+                      <td>{o.order_id}</td>
+                      <td>{o.customer_name}</td>
+                      <td style={{ color: "#475569", fontSize: 12 }}>{o.product}</td>
+                      <td>{o.channel}</td>
+                      <td>{fmtRs(o.value)}</td>
+                      <td>
+                        <span
+                          style={{
+                            ...st,
+                            padding: "3px 10px",
+                            borderRadius: 999,
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {o.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
+        {/* Channel Mix */}
         <div className="card">
           <h3>Channel Mix</h3>
-          <ul className="insight-list">
-            <li>Online store contributes 56% of total sales volume.</li>
-            <li>In-store sales are up 9% after weekend promotions.</li>
-            <li>Marketplace has lower AOV but strongest new-customer intake.</li>
-          </ul>
+          {Object.keys(channel.breakdown_pct).length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              {Object.entries(channel.breakdown_pct).map(([ch, pct]) => (
+                <div key={ch} style={{ marginBottom: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
+                    <span>{ch}</span>
+                    <strong>{pct}%</strong>
+                  </div>
+                  <div style={{ height: 6, background: "#e2e8f0", borderRadius: 999 }}>
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${pct}%`,
+                        background: "#3b82f6",
+                        borderRadius: 999,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {channel.insights.length > 0 && (
+            <ul className="insight-list">
+              {channel.insights.map((note, i) => <li key={i}>{note}</li>)}
+            </ul>
+          )}
+          {channel.insights.length === 0 && !loading && (
+            <p style={{ color: "#9ca3af", fontSize: 13, marginTop: 8 }}>
+              No channel insights yet.
+            </p>
+          )}
         </div>
       </div>
-
-      <PageFormModal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        title="Sales Report Filters"
-        description="Add details for a report request. Submission currently closes the form only."
-        submitLabel="Apply"
-        fields={[
-          { name: "dateRange", label: "Date Range", placeholder: "e.g. Last 30 days" },
-          { name: "channel", label: "Channel", placeholder: "Online / In-Store / Marketplace" },
-          { name: "region", label: "Region", placeholder: "Enter region" },
-          { name: "comments", label: "Comments", type: "textarea", placeholder: "Extra notes" },
-        ]}
-      />
     </div>
   );
 }
