@@ -22,7 +22,6 @@ function fmtLastSeen(ts) {
 function Users() {
   const [summary, setSummary] = useState(null);
   const [users,   setUsers]   = useState([]);
-  const [notes,   setNotes]   = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -38,12 +37,10 @@ function Users() {
     Promise.all([
       api.get("/api/users/summary"),
       api.get("/api/users"),
-      api.get("/api/users/activity-notes"),
     ])
-      .then(([s, u, n]) => {
+      .then(([s, u]) => {
         setSummary(s);
         setUsers(u);
-        setNotes(n.notes || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -104,7 +101,7 @@ function Users() {
       </div>
 
       {/* ── Main Grid ──────────────────────────── */}
-      <div className="page-grid">
+      <div>
         {/* Team Directory */}
         <div className="card">
           <h3>Team Directory</h3>
@@ -145,20 +142,6 @@ function Users() {
                 })}
               </tbody>
             </table>
-          )}
-        </div>
-
-        {/* Activity Notes */}
-        <div className="card">
-          <h3>User Activity Notes</h3>
-          {notes.length === 0 ? (
-            <p style={{ color: "#9ca3af", fontSize: 13, marginTop: 8 }}>
-              {loading ? "Loading…" : "No notes available."}
-            </p>
-          ) : (
-            <ul className="insight-list">
-              {notes.map((n, i) => <li key={i}>{n}</li>)}
-            </ul>
           )}
         </div>
       </div>

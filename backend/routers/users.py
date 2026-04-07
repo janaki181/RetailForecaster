@@ -5,8 +5,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User
-from schemas import UserInvite
+from models import User, ActivityNote
+from schemas import UserInvite, ActivityNoteCreate
 from auth import require_admin, get_password_hash, get_current_user
 from ml.llm_insights import generate_user_activity_notes
 
@@ -53,5 +53,49 @@ def invite_user(payload: UserInvite, db: Session = Depends(get_db), _=Depends(re
 def activity_notes(db: Session = Depends(get_db), _=Depends(get_current_user)):
     rows = db.query(User.role, func.count(User.id)).group_by(User.role).all()
     summary = ", ".join([f"{role}: {count}" for role, count in rows])
-    notes = generate_user_activity_notes(summary)
-    return {"notes": notes}
+    ai_notes = generate_user_activity_notes(summary)
+
+    manual = (
+        db.query(ActivityNote, User)
+        .outerjoin(User, User.id == ActivityNote.created_by)
+        .order_by(ActivityNote.created_at.desc())
+        .limit(20)
+        .all()
+    )
+
+    manual_notes = [
+        {
+            "id": note.id,
+            "content": note.content,
+            "created_at": note.created_at,
+            "created_by": user.name if user else "Unknown",
+        }
+        for note, user in manual
+    ]
+
+    return {"ai_notes": ai_notes, "manual_notes": manual_notes}
+
+
+@router.post("/activity-notes")
+def create_activity_note(payload: ActivityNoteCreate, db: Session = Depends(get_db), user: User = Depends(require_admin)):
+    note = ActivityNote(content=payload.content.strip(), created_by=user.id)
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    return {
+        "id": note.id,
+        "content": note.content,
+        "created_at": note.created_at,
+        "created_by": user.name,
+    }
+
+
+@router.delete("/activity-notes/{note_id}")
+def delete_activity_note(note_id: int, db: Session = Depends(get_db), _=Depends(require_admin)):
+    note = db.query(ActivityNote).filter(ActivityNote.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    db.delete(note)
+    db.commit()
+    return {"ok": True}

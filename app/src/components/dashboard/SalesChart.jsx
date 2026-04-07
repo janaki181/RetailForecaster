@@ -44,7 +44,15 @@ function SalesChart() {
           },
           options: {
             responsive: true,
-            plugins: { legend: { display: true, position: "top" } },
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: true, position: "top" },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: Rs ${Number(ctx.raw || 0).toLocaleString("en-IN")}`,
+                },
+              },
+            },
             scales: {
               y: {
                 beginAtZero: true,

@@ -4,7 +4,7 @@ import Chart from "chart.js/auto";
 import { api } from "../api/client";
 
 // FIXED: all data live from backend — no hardcoded stats or highlights
-// Added: 30-day ML forecast chart, demand summary table, seasonal forecast panel
+// Added: 7-day ML forecast chart, demand summary table, seasonal forecast panel
 
 const ACTION_STYLE = {
   "Urgent Restock": { background: "#fee2e2", color: "#b91c1c" },
@@ -20,54 +20,131 @@ function ForecastChart() {
   const canvasRef     = useRef();
   const chartInstance = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const [selectedProduct, setSelectedProduct] = useState("ALL");
+  const [showActual, setShowActual] = useState(true);
+  const [showPredicted, setShowPredicted] = useState(true);
 
   useEffect(() => {
     api.get("/api/forecast/chart-data")
       .then((data) => {
-        if (chartInstance.current) chartInstance.current.destroy();
-
-        const shortLabels = data.labels.map((l) => {
-          const d = new Date(l);
-          return `${d.getDate()} ${d.toLocaleString("default", { month: "short" })}`;
-        });
-
-        chartInstance.current = new Chart(canvasRef.current, {
-          type: "line",
-          data: {
-            labels: shortLabels,
-            datasets: data.datasets.map((ds, i) => ({
-              label:       ds.product,
-              data:        ds.values,
-              borderColor: CHART_COLORS[i % CHART_COLORS.length],
-              backgroundColor: "transparent",
-              tension:     0.4,
-              pointRadius: 1.5,
-            })),
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { position: "top", labels: { font: { size: 11 } } } },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: "Predicted Units" },
-              },
-            },
-          },
-        });
+        setChartData(data || { labels: [], datasets: [] });
+        const first = data?.datasets?.[0]?.product;
+        if (first) {
+          setSelectedProduct(first);
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-
-    return () => { if (chartInstance.current) chartInstance.current.destroy(); };
   }, []);
+
+  useEffect(() => {
+    if (!chartData.labels?.length) {
+      return;
+    }
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    const shortLabels = chartData.labels.map((l) => {
+      const d = new Date(l);
+      return `${d.getDate()} ${d.toLocaleString("default", { month: "short" })}`;
+    });
+
+    const source = selectedProduct === "ALL"
+      ? chartData.datasets
+      : chartData.datasets.filter((d) => d.product === selectedProduct);
+
+    const datasets = [];
+    source.forEach((ds, i) => {
+      const color = CHART_COLORS[i % CHART_COLORS.length];
+      if (showActual) {
+        datasets.push({
+          label: `${ds.product} (Actual)`,
+          data: ds.actual_values,
+          borderColor: color,
+          backgroundColor: "transparent",
+          tension: 0.35,
+          pointRadius: 1.5,
+        });
+      }
+      if (showPredicted) {
+        datasets.push({
+          label: `${ds.product} (Predicted)`,
+          data: ds.predicted_values,
+          borderColor: color,
+          borderDash: [6, 4],
+          backgroundColor: "transparent",
+          tension: 0.35,
+          pointRadius: 1.2,
+        });
+      }
+    });
+
+    chartInstance.current = new Chart(canvasRef.current, {
+      type: "line",
+      data: {
+        labels: shortLabels,
+        datasets,
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "top", labels: { font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${Number(ctx.raw || 0).toFixed(2)} units`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: "Units" },
+          },
+        },
+      },
+    });
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [chartData, selectedProduct, showActual, showPredicted]);
 
   return (
     <div className="card" style={{ marginTop: 20 }}>
       <h3>
-        30-Day Demand Forecast (ML){" "}
+        Top-5 Demand Trend (Last 30 Days){" "}
         {loading && <span style={{ fontSize: 12, color: "#9ca3af" }}>loading…</span>}
       </h3>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, margin: "10px 0 14px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+          Product:
+          <select
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+            style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1" }}
+          >
+            {chartData.datasets.length > 1 && <option value="ALL">All Top 5</option>}
+            {chartData.datasets.map((d) => (
+              <option key={d.product} value={d.product}>{d.product}</option>
+            ))}
+          </select>
+        </label>
+
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+          <input type="checkbox" checked={showActual} onChange={(e) => setShowActual(e.target.checked)} />
+          Actual
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+          <input type="checkbox" checked={showPredicted} onChange={(e) => setShowPredicted(e.target.checked)} />
+          Predicted
+        </label>
+      </div>
+
       <canvas ref={canvasRef} />
     </div>
   );
@@ -165,7 +242,7 @@ function Analytics() {
         </div>
       </div>
 
-      {/* ── 30-Day ML Forecast Chart ───────────── */}
+      {/* ── 7-Day ML Forecast Chart ───────────── */}
       <ForecastChart />
 
       {/* ── Demand Summary Table ──────────────── */}

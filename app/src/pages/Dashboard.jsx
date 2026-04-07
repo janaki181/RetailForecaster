@@ -9,7 +9,7 @@ import ProductTable from "../components/dashboard/ProductTable";
 import Alerts from "../components/dashboard/Alerts";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../lib/api";
+import { api } from "../api/client";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -25,11 +25,11 @@ function Dashboard() {
     async function loadDashboard() {
       try {
         const [summaryData, salesTrendData, categoryData, alertData, topData] = await Promise.all([
-          apiFetch("/api/dashboard/summary"),
-          apiFetch("/api/dashboard/sales-trend"),
-          apiFetch("/api/dashboard/category-performance"),
-          apiFetch("/api/dashboard/demand-alerts"),
-          apiFetch("/api/products/top-performing"),
+          api.get("/api/dashboard/summary"),
+          api.get("/api/dashboard/sales-trend"),
+          api.get("/api/dashboard/category-performance"),
+          api.get("/api/dashboard/demand-alerts"),
+          api.get("/api/products/top-performing"),
         ]);
 
         if (!isMounted) {

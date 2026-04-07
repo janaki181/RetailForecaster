@@ -16,6 +16,34 @@ class User(Base):
     last_seen = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    memberships = relationship("ShopMember", back_populates="user", cascade="all, delete-orphan")
+
+
+class Shop(Base):
+    __tablename__ = "shops"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(150), unique=True, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    members = relationship("ShopMember", back_populates="shop", cascade="all, delete-orphan")
+
+
+class ShopMember(Base):
+    __tablename__ = "shop_members"
+    __table_args__ = (
+        UniqueConstraint("user_id", "shop_id", name="uq_user_shop_membership"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    shop_id = Column(Integer, ForeignKey("shops.id", ondelete="CASCADE"), nullable=False)
+    role = Column(String(40), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="memberships")
+    shop = relationship("Shop", back_populates="members")
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -115,3 +143,14 @@ class Setting(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String(120), unique=True, nullable=False, index=True)
     value = Column(Text, nullable=False)
+
+
+class ActivityNote(Base):
+    __tablename__ = "activity_notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(Text, nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    author = relationship("User")

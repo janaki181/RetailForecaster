@@ -20,19 +20,34 @@ import Inventory  from "./pages/Inventory";
 import Users      from "./pages/Users";
 import Settings   from "./pages/Settings";
 
+const ROLE_ACCESS = {
+  dashboard: ["Admin", "Store Manager", "Sales Associate", "Inventory Lead", "Analyst"],
+  products: ["Admin", "Store Manager", "Inventory Lead", "Analyst"],
+  sales: ["Admin", "Store Manager", "Sales Associate"],
+  analytics: ["Admin", "Store Manager", "Analyst"],
+  inventory: ["Admin", "Store Manager", "Inventory Lead"],
+  users: ["Admin"],
+  settings: ["Admin"],
+};
+
 function App() {
   const [showAuth, setShowAuth]           = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState("Sales Associate");
 
   useEffect(() => {
     // Restore session on page refresh
     if (localStorage.getItem("rf_auth") === "true") {
       setIsAuthenticated(true);
+      const user = JSON.parse(localStorage.getItem("rf_user") || "null");
+      setRole(user?.role || "Sales Associate");
     }
   }, []);
 
   const openAuth  = () => setShowAuth(true);
   const closeAuth = () => setShowAuth(false);
+
+  const can = (key) => ROLE_ACCESS[key]?.includes(role);
 
   return (
     <Routes>
@@ -68,12 +83,12 @@ function App() {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/products"  element={<Products />}  />
-        <Route path="/sales"     element={<Sales />}     />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/users"     element={<Users />}     />
-        <Route path="/settings"  element={<Settings />}  />
+        <Route path="/products"  element={can("products") ? <Products /> : <Navigate to="/dashboard" replace />}  />
+        <Route path="/sales"     element={can("sales") ? <Sales /> : <Navigate to="/dashboard" replace />}     />
+        <Route path="/analytics" element={can("analytics") ? <Analytics /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/inventory" element={can("inventory") ? <Inventory /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/users"     element={can("users") ? <Users /> : <Navigate to="/dashboard" replace />}     />
+        <Route path="/settings"  element={can("settings") ? <Settings /> : <Navigate to="/dashboard" replace />}  />
       </Route>
     </Routes>
   );

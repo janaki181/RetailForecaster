@@ -46,7 +46,7 @@ def _daily_sales_df(db: Session, product_id: int, lookback_days: int = 180) -> p
     return pd.DataFrame(rows, columns=["sale_date", "qty"])
 
 
-def forecast_product(db: Session, product_id: int, horizon: int = 30) -> Dict:
+def forecast_product(db: Session, product_id: int, horizon: int = 7) -> Dict:
     empty = {
         "product_id": product_id,
         "model": None,
@@ -146,7 +146,7 @@ def forecast_product(db: Session, product_id: int, horizon: int = 30) -> Dict:
     }
 
 
-def retrain_all_models(db: Session, horizon: int = 30) -> Dict:
+def retrain_all_models(db: Session, horizon: int = 7) -> Dict:
     products = db.query(Product).all()
     scores = []
     for p in products:

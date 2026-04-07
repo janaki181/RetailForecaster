@@ -200,7 +200,7 @@ function Inventory() {
               <button className="page-form-close" onClick={() => setShowPO(false)}>Close</button>
             </div>
             <p className="page-form-description">
-              ML-recommended reorder quantities based on 30-day demand forecast.
+              ML-recommended reorder quantities based on 7-day demand forecast.
               Select a product, adjust quantity if needed, then confirm.
             </p>
 

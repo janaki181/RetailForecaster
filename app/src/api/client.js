@@ -1,58 +1,90 @@
-// Central API utility — every fetch in the app goes through here.
-// Attaches JWT Bearer token automatically to every request.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+export const API_BASE = BASE_URL;
 
-const BASE_URL = "http://localhost:8000";
+function getToken() {
+  return localStorage.getItem("rf_token");
+}
+
+async function handleAuthFailure(response) {
+  if (response.status !== 401) {
+    return false;
+  }
+
+  localStorage.removeItem("rf_token");
+  localStorage.removeItem("rf_auth");
+  localStorage.removeItem("rf_user");
+  window.location.href = "/";
+  return true;
+}
 
 export async function apiFetch(path, options = {}) {
-  const token = localStorage.getItem("rf_token");
+  const { method = "GET", body, auth = true, headers = {} } = options;
+  const finalHeaders = { ...headers };
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
+  if (body !== undefined) {
+    finalHeaders["Content-Type"] = "application/json";
+  }
+
+  if (auth) {
+    const token = getToken();
+    if (token) {
+      finalHeaders.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: finalHeaders,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  if (res.status === 401) {
-    // Token expired — clear everything and force re-login
-    localStorage.removeItem("rf_token");
-    localStorage.removeItem("rf_auth");
-    localStorage.removeItem("rf_user");
-    window.location.href = "/";
+  if (await handleAuthFailure(response)) {
     return null;
   }
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `API error ${res.status}`);
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    const message = data?.detail || `Request failed: ${response.status}`;
+    throw new Error(message);
   }
 
-  return res.json();
+  return data;
 }
 
 export const api = {
-  get:    (path)        => apiFetch(path),
-  post:   (path, body)  => apiFetch(path, { method: "POST",   body: JSON.stringify(body) }),
-  put:    (path, body)  => apiFetch(path, { method: "PUT",    body: JSON.stringify(body) }),
-  delete: (path)        => apiFetch(path, { method: "DELETE" }),
+  get: (path) => apiFetch(path),
+  post: (path, body) => apiFetch(path, { method: "POST", body }),
+  put: (path, body) => apiFetch(path, { method: "PUT", body }),
+  delete: (path) => apiFetch(path, { method: "DELETE" }),
 };
 
-// Trigger a file download (CSV / XML) using the auth token
-export function downloadFile(path, filename) {
-  const token = localStorage.getItem("rf_token");
-  fetch(`${BASE_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  })
-    .then((res) => res.blob())
-    .then((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a  = document.createElement("a");
-      a.href     = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    })
-    .catch(console.error);
+export async function downloadFile(path, filename) {
+  const headers = {};
+  const token = getToken();
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${BASE_URL}${path}`, { headers });
+
+  if (await handleAuthFailure(response)) {
+    return;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }

@@ -38,7 +38,7 @@ def forecast_all(db: Session = Depends(get_db), _=Depends(get_current_user)):
                     DemandForecast.forecast_date >= date.today(),
                 )
                 .order_by(DemandForecast.forecast_date.asc())
-                .limit(30)
+                .limit(7)
                 .all()
             )
             conf = max(0.0, float(rows[0].confidence_score)) if rows and rows[0].confidence_score else None
@@ -54,7 +54,7 @@ def forecast_all(db: Session = Depends(get_db), _=Depends(get_current_user)):
             })
         else:
             # Only train when no cached data exists
-            result = forecast_product(db, p.id, horizon=30)
+            result = forecast_product(db, p.id, horizon=7)
             result["product_name"] = p.name
             out.append(result)
     return out
@@ -62,36 +62,62 @@ def forecast_all(db: Session = Depends(get_db), _=Depends(get_current_user)):
 
 @router.get("/chart-data")
 def chart_data(db: Session = Depends(get_db), _=Depends(get_current_user)):
+    end = db.query(func.max(func.date(Sale.sale_date))).scalar() or date.today()
+    start = end - timedelta(days=29)
+
     top = (
         db.query(
             Product.id,
             Product.name,
-            func.coalesce(func.sum(Sale.revenue), 0.0).label("rev"),
+            func.coalesce(func.sum(Sale.quantity), 0.0).label("qty"),
         )
         .join(Sale, Sale.product_id == Product.id)
+        .filter(func.date(Sale.sale_date) >= start, func.date(Sale.sale_date) <= end)
         .group_by(Product.id, Product.name)
-        .order_by(func.coalesce(func.sum(Sale.revenue), 0.0).desc())
+        .order_by(func.coalesce(func.sum(Sale.quantity), 0.0).desc())
         .limit(5)
         .all()
     )
-    labels = [str(date.today() + timedelta(days=i)) for i in range(1, 31)]
+
+    labels = [start + timedelta(days=i) for i in range(30)]
     datasets = []
+
     for t in top:
-        rows = (
-            db.query(DemandForecast)
+        actual_rows = (
+            db.query(func.date(Sale.sale_date).label("d"), func.coalesce(func.sum(Sale.quantity), 0.0).label("qty"))
             .filter(
-                DemandForecast.product_id == t.id,
-                DemandForecast.forecast_date >= date.today(),
+                Sale.product_id == t.id,
+                func.date(Sale.sale_date) >= start,
+                func.date(Sale.sale_date) <= end,
             )
-            .order_by(DemandForecast.forecast_date.asc())
-            .limit(30)
+            .group_by(func.date(Sale.sale_date))
+            .order_by(func.date(Sale.sale_date).asc())
             .all()
         )
-        values = [round(float(r.predicted_qty), 2) for r in rows]
-        if len(values) < 30:
-            values.extend([0.0] * (30 - len(values)))
-        datasets.append({"product": t.name, "values": values})
-    return {"labels": labels, "datasets": datasets}
+
+        actual_map = {r.d: float(r.qty) for r in actual_rows}
+        actual_values = [round(actual_map.get(d, 0.0), 2) for d in labels]
+
+        # Simple rolling baseline for comparison over historical window.
+        predicted_values = []
+        history = []
+        for v in actual_values:
+            if history:
+                window = history[-7:]
+                predicted_values.append(round(sum(window) / len(window), 2))
+            else:
+                predicted_values.append(round(v, 2))
+            history.append(v)
+
+        datasets.append(
+            {
+                "product": t.name,
+                "actual_values": actual_values,
+                "predicted_values": predicted_values,
+            }
+        )
+
+    return {"labels": [str(d) for d in labels], "datasets": datasets}
 
 
 @router.get("/demand-summary")
@@ -134,7 +160,7 @@ def reorder(db: Session = Depends(get_db), _=Depends(get_current_user)):
 
 @router.post("/retrain")
 def retrain(db: Session = Depends(get_db), _=Depends(get_current_user)):
-    return retrain_all_models(db, horizon=30)
+    return retrain_all_models(db, horizon=7)
 
 
 # Parameterized route LAST — prevents /all, /chart-data etc. being matched as product IDs
@@ -144,4 +170,4 @@ def forecast_single(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return forecast_product(db, product_id, horizon=30)
+    return forecast_product(db, product_id, horizon=7)

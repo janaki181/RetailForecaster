@@ -19,7 +19,19 @@ def _pct(cur: float, prev: float):
 
 @router.get("/summary")
 def summary(db: Session = Depends(get_db), _=Depends(get_current_user)):
-    today = date.today()
+    latest_sale_dt = db.query(func.max(func.date(Sale.sale_date))).scalar()
+    if not latest_sale_dt:
+        return {
+            "today_revenue": 0.0,
+            "today_revenue_change_pct": 0.0,
+            "units_sold_today": 0,
+            "units_sold_change_pct": 0.0,
+            "low_stock_items": int(db.query(func.count(Product.id)).filter(Product.stock < Product.min_stock).scalar() or 0),
+            "monthly_revenue": 0.0,
+            "monthly_revenue_change_pct": 0.0,
+        }
+
+    today = latest_sale_dt
     yday = today - timedelta(days=1)
     this_month = today.replace(day=1)
     prev_month_end = this_month - timedelta(days=1)
@@ -46,22 +58,30 @@ def summary(db: Session = Depends(get_db), _=Depends(get_current_user)):
 
 @router.get("/sales-trend")
 def sales_trend(db: Session = Depends(get_db), _=Depends(get_current_user)):
-    today = date.today()
-    start = today - timedelta(days=29)
-    labels = [start + timedelta(days=i) for i in range(30)]
+    anchor = db.query(func.max(func.date(Sale.sale_date))).scalar() or date.today()
+    history_days = 23
+    forecast_days = 7
+    start = anchor - timedelta(days=history_days - 1)
+    labels = [start + timedelta(days=i) for i in range(history_days + forecast_days)]
     actual = []
     forecast = []
     for d in labels:
         ar = db.query(func.coalesce(func.sum(Sale.revenue), 0.0)).filter(func.date(Sale.sale_date) == d).scalar() or 0.0
-        fr = (
-            db.query(func.coalesce(func.sum(DemandForecast.predicted_qty * Product.price), 0.0))
-            .join(Product, Product.id == DemandForecast.product_id)
-            .filter(DemandForecast.forecast_date == d)
-            .scalar()
-            or 0.0
-        )
-        actual.append(float(ar))
-        forecast.append(float(fr))
+
+        if d > anchor:
+            fr = (
+                db.query(func.coalesce(func.sum(DemandForecast.predicted_qty * Product.price), 0.0))
+                .join(Product, Product.id == DemandForecast.product_id)
+                .filter(DemandForecast.forecast_date == d)
+                .scalar()
+                or 0.0
+            )
+            forecast.append(float(fr))
+            actual.append(None)
+        else:
+            actual.append(float(ar))
+            forecast.append(None)
+
     return {"labels": [str(d) for d in labels], "actual_values": actual, "forecast_values": forecast}
 
 

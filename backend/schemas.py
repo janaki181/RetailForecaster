@@ -8,6 +8,14 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    email: EmailStr
+    password: str = Field(min_length=6)
+    role: str = Field(default="Sales Associate")
+    shop_name: Optional[str] = Field(default=None, max_length=150)
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -28,6 +36,10 @@ class UserInvite(BaseModel):
     name: str
     email: EmailStr
     role: str
+
+
+class ActivityNoteCreate(BaseModel):
+    content: str = Field(min_length=3, max_length=1000)
 
 
 class UserOut(UserBase):
@@ -85,6 +97,10 @@ class SaleCreate(BaseModel):
     customer_name: str
     channel: str
     quantity: int
+    status: str
+
+
+class SaleStatusUpdate(BaseModel):
     status: str
 
 

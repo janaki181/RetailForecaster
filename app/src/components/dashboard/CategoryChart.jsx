@@ -18,14 +18,21 @@ function CategoryChart() {
         const values = rows.map((r) => r.revenue_pct);
 
         chartInstance.current = new Chart(canvasRef.current, {
-          type: "pie",
+          type: "doughnut",
           data: {
             labels,
             datasets: [{ data: values, backgroundColor: COLORS.slice(0, values.length) }],
           },
           options: {
             responsive: true,
-            plugins: { legend: { position: "top", labels: { font: { size: 11 } } } },
+            plugins: {
+              legend: { position: "top", labels: { font: { size: 11 } } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.label}: ${ctx.raw}%`,
+                },
+              },
+            },
           },
         });
       })

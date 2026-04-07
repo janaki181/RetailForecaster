@@ -143,7 +143,7 @@ def create_po(
     db.add(InventoryLog(product_id=p.id, change_qty=payload.quantity, reason="Purchase Order"))
     db.commit()
     db.refresh(po)
-    forecast_product(db, p.id, horizon=30)
+    forecast_product(db, p.id, horizon=7)
 
     return {"po_id": po.id, "product": p.name, "quantity": payload.quantity, "status": po.status}
 
@@ -180,5 +180,5 @@ def adjust_inventory(
     p.stock += payload.change_qty
     db.add(InventoryLog(product_id=p.id, change_qty=payload.change_qty, reason=payload.reason))
     db.commit()
-    forecast_product(db, p.id, horizon=30)
+    forecast_product(db, p.id, horizon=7)
     return {"product_id": p.id, "new_stock": p.stock}

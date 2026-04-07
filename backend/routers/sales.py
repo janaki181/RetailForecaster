@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Sale, Product, InventoryLog, Setting
-from schemas import SaleCreate
+from schemas import SaleCreate, SaleStatusUpdate
 from auth import get_current_user
 from ml.forecaster import forecast_product
 from ml.llm_insights import generate_channel_insights
@@ -13,9 +13,23 @@ from ml.llm_insights import generate_channel_insights
 router = APIRouter(prefix="/api/sales", tags=["sales"])
 
 
+def _is_fulfilled_status(status: str) -> bool:
+    return (status or "").strip().lower() in {"shipped", "delivered"}
+
+
+def _has_sale_deduction_log(db: Session, sale_id: int) -> bool:
+    return (
+        db.query(InventoryLog.id)
+        .filter(InventoryLog.reason == f"Sale #{sale_id}")
+        .first()
+        is not None
+    )
+
+
 @router.get("/summary")
 def sales_summary(db: Session = Depends(get_db), _=Depends(get_current_user)):
-    today = date.today()
+    latest_sale_dt = db.query(func.max(func.date(Sale.sale_date))).scalar()
+    today = latest_sale_dt or date.today()
     today_revenue = (
         db.query(func.coalesce(func.sum(Sale.revenue), 0.0)).filter(func.date(Sale.sale_date) == today).scalar() or 0.0
     )
@@ -43,6 +57,7 @@ def recent_sales(db: Session = Depends(get_db), _=Depends(get_current_user)):
     )
     return [
         {
+            "sale_id": sale.id,
             "order_id": f"ORD-{sale.id:04d}",
             "customer_name": sale.customer_name,
             "channel": sale.channel,
@@ -90,7 +105,8 @@ def create_sale(payload: SaleCreate, db: Session = Depends(get_db), _=Depends(ge
         raise HTTPException(status_code=404, detail="Product not found")
     if payload.quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be positive")
-    if p.stock < payload.quantity:
+    should_deduct = _is_fulfilled_status(payload.status)
+    if should_deduct and p.stock < payload.quantity:
         raise HTTPException(status_code=400, detail="Insufficient stock")
 
     revenue = payload.quantity * p.price
@@ -102,15 +118,48 @@ def create_sale(payload: SaleCreate, db: Session = Depends(get_db), _=Depends(ge
         revenue=revenue,
         status=payload.status,
     )
-    p.stock -= payload.quantity
     db.add(s)
-    db.add(InventoryLog(product_id=p.id, change_qty=-payload.quantity, reason="Sale"))
     db.commit()
     db.refresh(s)
 
-    forecast_product(db, p.id, horizon=30)
+    if should_deduct and not _has_sale_deduction_log(db, s.id):
+        p.stock -= payload.quantity
+        db.add(InventoryLog(product_id=p.id, change_qty=-payload.quantity, reason=f"Sale #{s.id}"))
+        db.commit()
+
+    forecast_product(db, p.id, horizon=7)
 
     return {"id": s.id, "revenue": s.revenue, "stock_after": p.stock}
+
+
+@router.put("/{sale_id}/status")
+def update_sale_status(sale_id: int, payload: SaleStatusUpdate, db: Session = Depends(get_db), _=Depends(get_current_user)):
+    sale = db.query(Sale).filter(Sale.id == sale_id).first()
+    if not sale:
+        raise HTTPException(status_code=404, detail="Sale not found")
+
+    product = db.query(Product).filter(Product.id == sale.product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    old_status = sale.status
+    sale.status = payload.status
+
+    if _is_fulfilled_status(payload.status) and not _has_sale_deduction_log(db, sale.id):
+        if product.stock < sale.quantity:
+            raise HTTPException(status_code=400, detail="Insufficient stock to mark as shipped/delivered")
+        product.stock -= sale.quantity
+        db.add(InventoryLog(product_id=product.id, change_qty=-sale.quantity, reason=f"Sale #{sale.id}"))
+
+    db.commit()
+    forecast_product(db, product.id, horizon=7)
+
+    return {
+        "sale_id": sale.id,
+        "old_status": old_status,
+        "new_status": sale.status,
+        "stock_after": product.stock,
+    }
 
 
 @router.get("/channel-mix")

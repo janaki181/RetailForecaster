@@ -72,7 +72,7 @@ def run_seed():
     default_settings = {
         "currency": "INR",
         "timezone": "Asia/Kolkata",
-        "forecast_horizon": "30",
+        "forecast_horizon": "7",
         "max_warehouse_capacity": "50000",
         "safety_buffer_days": "7",
         "estimated_visitors_per_order": "20",

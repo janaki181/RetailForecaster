@@ -15,28 +15,100 @@ const STATUS_STYLE = {
 const fmtRs = (n) =>
   "Rs " + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 
+const fmtSignedPct = (n) => {
+  const num = Number(n ?? 0);
+  return `${num >= 0 ? "+" : ""}${num.toFixed(2)}%`;
+};
+
+const fmtOrderDate = (value) => {
+  if (!value) return "—";
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return "—";
+  return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+};
+
 function Sales() {
   const [summary,  setSummary]  = useState(null);
   const [orders,   setOrders]   = useState([]);
   const [channel,  setChannel]  = useState({ breakdown_pct: {}, insights: [] });
+  const [products, setProducts] = useState([]);
   const [loading,  setLoading]  = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formErr, setFormErr] = useState("");
+  const [formMsg, setFormMsg] = useState("");
+  const [statusSavingId, setStatusSavingId] = useState(null);
+  const [form, setForm] = useState({
+    product_id: "",
+    customer_name: "",
+    channel: "In-Store",
+    quantity: "1",
+    status: "Delivered",
+  });
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
     Promise.all([
       api.get("/api/sales/summary"),
       api.get("/api/sales/recent"),
       api.get("/api/sales/channel-mix"),
+      api.get("/api/products"),
     ])
-      .then(([s, o, c]) => {
+      .then(([s, o, c, p]) => {
         setSummary(s);
         setOrders(o);
         setChannel(c);
+        setProducts(p || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
   }, []);
 
   const handleExport = () => downloadFile("/api/reports/export/csv", "sales_report.csv");
+
+  const handleCreateSale = async (e) => {
+    e.preventDefault();
+    setFormErr("");
+    setFormMsg("");
+    setSaving(true);
+    try {
+      const res = await api.post("/api/sales", {
+        product_id: Number(form.product_id),
+        customer_name: form.customer_name.trim(),
+        channel: form.channel,
+        quantity: Number(form.quantity),
+        status: form.status,
+      });
+      setFormMsg(`Sale recorded. Updated stock: ${res.stock_after}`);
+      setForm({
+        product_id: "",
+        customer_name: "",
+        channel: "In-Store",
+        quantity: "1",
+        status: "Delivered",
+      });
+      load();
+    } catch (err) {
+      setFormErr(err.message || "Failed to record sale.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStatusUpdate = async (saleId, nextStatus) => {
+    setStatusSavingId(saleId);
+    try {
+      await api.put(`/api/sales/${saleId}/status`, { status: nextStatus });
+      load();
+    } catch (_err) {
+    } finally {
+      setStatusSavingId(null);
+    }
+  };
 
   return (
     <div className="dashboard page-shell">
@@ -48,6 +120,9 @@ function Sales() {
         </div>
         <button className="page-action" onClick={handleExport}>
           Export CSV
+        </button>
+        <button className="page-action" onClick={() => setShowForm(true)}>
+          Record Sale
         </button>
       </div>
 
@@ -67,9 +142,97 @@ function Sales() {
         </div>
         <div className="kpi-card">
           <h4>Conversion Rate</h4>
-          <strong>{loading ? "—" : `${summary?.conversion_rate ?? "—"}%`}</strong>
+          <strong>{loading ? "—" : fmtSignedPct(summary?.conversion_rate)}</strong>
         </div>
       </div>
+
+      {showForm && (
+        <div className="page-form-overlay">
+          <div className="page-form-modal">
+            <div className="page-form-header">
+              <h3>Record New Sale</h3>
+              <button className="page-form-close" onClick={() => setShowForm(false)}>Close</button>
+            </div>
+
+            <form className="page-form-body" onSubmit={handleCreateSale}>
+              <label className="page-form-field">
+                <span>Product *</span>
+                <select
+                  value={form.product_id}
+                  onChange={(e) => setForm((f) => ({ ...f, product_id: e.target.value }))}
+                  required
+                  style={{ padding: "10px 12px", border: "1px solid #cbd5e1", borderRadius: 8 }}
+                >
+                  <option value="">Select product</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} (stock: {p.stock})</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="page-form-field">
+                <span>Customer Name *</span>
+                <input
+                  type="text"
+                  value={form.customer_name}
+                  onChange={(e) => setForm((f) => ({ ...f, customer_name: e.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="page-form-field">
+                <span>Channel *</span>
+                <select
+                  value={form.channel}
+                  onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value }))}
+                  style={{ padding: "10px 12px", border: "1px solid #cbd5e1", borderRadius: 8 }}
+                >
+                  <option>Online</option>
+                  <option>In-Store</option>
+                  <option>Marketplace</option>
+                </select>
+              </label>
+
+              <label className="page-form-field">
+                <span>Quantity *</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.quantity}
+                  onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="page-form-field">
+                <span>Status *</span>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                  style={{ padding: "10px 12px", border: "1px solid #cbd5e1", borderRadius: 8 }}
+                >
+                  <option>Delivered</option>
+                  <option>Shipped</option>
+                  <option>Packed</option>
+                  <option>Processing</option>
+                </select>
+              </label>
+
+              {formErr && <p style={{ color: "#ef4444", fontSize: 13 }}>{formErr}</p>}
+              {formMsg && <p style={{ color: "#15803d", fontSize: 13 }}>{formMsg}</p>}
+
+              <div className="page-form-actions">
+                <button type="button" className="page-form-cancel" onClick={() => setShowForm(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="page-form-submit" disabled={saving}>
+                  {saving ? "Saving..." : "Save Sale"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Main Grid ──────────────────────────── */}
       <div className="page-grid">
@@ -85,6 +248,7 @@ function Sales() {
               <thead>
                 <tr>
                   <th>Order ID</th>
+                  <th>Order Date</th>
                   <th>Customer</th>
                   <th>Product</th>
                   <th>Channel</th>
@@ -98,22 +262,32 @@ function Sales() {
                   return (
                     <tr key={o.order_id}>
                       <td>{o.order_id}</td>
+                      <td>{fmtOrderDate(o.sale_date)}</td>
                       <td>{o.customer_name}</td>
                       <td style={{ color: "#475569", fontSize: 12 }}>{o.product}</td>
                       <td>{o.channel}</td>
                       <td>{fmtRs(o.value)}</td>
                       <td>
-                        <span
+                        <select
+                          value={o.status}
+                          onChange={(e) => handleStatusUpdate(o.sale_id, e.target.value)}
+                          disabled={statusSavingId === o.sale_id}
                           style={{
                             ...st,
-                            padding: "3px 10px",
+                            padding: "4px 8px",
                             borderRadius: 999,
                             fontSize: 12,
                             fontWeight: 600,
+                            border: "none",
+                            outline: "none",
+                            cursor: "pointer",
                           }}
                         >
-                          {o.status}
-                        </span>
+                          <option>Processing</option>
+                          <option>Packed</option>
+                          <option>Shipped</option>
+                          <option>Delivered</option>
+                        </select>
                       </td>
                     </tr>
                   );
