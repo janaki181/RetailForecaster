@@ -4,6 +4,7 @@
   padding: 20px 40px;
 }
 
+
 .topbar {
   display: flex;
   align-items: center;
@@ -44,6 +45,7 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+
 .chart-row,
 .bottom-row {
   display: grid;
@@ -58,6 +60,7 @@
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
+
 
 table {
   width: 100%;
@@ -94,6 +97,7 @@ th, td {
   justify-content: space-between;
   margin-bottom: 20px;
 }
+
 
 .page-action {
   background: var(--primary);
@@ -152,6 +156,7 @@ th, td {
   color: #334155;
   font-size: 14px;
 }
+
 
 .status-pill {
   display: inline-block;

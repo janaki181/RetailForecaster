@@ -27,7 +27,7 @@ def users_summary(db: Session = Depends(get_db), _=Depends(require_admin)):
 @router.get("")
 def list_users(db: Session = Depends(get_db), _=Depends(require_admin)):
     users = db.query(User).order_by(User.last_seen.desc()).all()
-    return [{"name": u.name, "email": u.email, "role": u.role, "status": u.status, "last_seen": u.last_seen} for u in users]
+    return [{"name": u.name, "email": u.email, "role": u.role, "last_seen": u.last_seen} for u in users]
 
 
 @router.post("/invite")

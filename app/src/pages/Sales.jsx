@@ -24,7 +24,11 @@ const fmtOrderDate = (value) => {
   if (!value) return "—";
   const dt = new Date(value);
   if (Number.isNaN(dt.getTime())) return "—";
-  return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return dt.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 function Sales() {
@@ -248,7 +252,7 @@ function Sales() {
               <thead>
                 <tr>
                   <th>Order ID</th>
-                  <th>Order Date</th>
+                  <th>Sold On</th>
                   <th>Customer</th>
                   <th>Product</th>
                   <th>Channel</th>

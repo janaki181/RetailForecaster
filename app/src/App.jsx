@@ -44,6 +44,14 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+    const user = JSON.parse(localStorage.getItem("rf_user") || "null");
+    setRole(user?.role || "Sales Associate");
+  }, [isAuthenticated]);
+
   const openAuth  = () => setShowAuth(true);
   const closeAuth = () => setShowAuth(false);
 
@@ -69,7 +77,10 @@ function App() {
               <AuthModal
                 isOpen={showAuth}
                 onClose={closeAuth}
-                onLoginSuccess={() => setIsAuthenticated(true)}
+                onLoginSuccess={(user) => {
+                  setIsAuthenticated(true);
+                  setRole(user?.role || "Sales Associate");
+                }}
               />
             </>
           )

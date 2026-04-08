@@ -49,7 +49,7 @@ function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       localStorage.setItem("rf_auth",  "true");
       localStorage.setItem("rf_user",  JSON.stringify(data.user));
 
-      if (onLoginSuccess) onLoginSuccess();
+      if (onLoginSuccess) onLoginSuccess(data.user);
       onClose();
       navigate("/dashboard");
     } catch {

@@ -4,12 +4,6 @@ import { api } from "../api/client";
 
 // FIXED: all data live from backend — no hardcoded user rows
 
-const STATUS_STYLE = {
-  Active: { background: "#dcfce7", color: "#15803d" },
-  Away:   { background: "#fef9c3", color: "#854d0e" },
-  Offline:{ background: "#f3f4f6", color: "#6b7280" },
-};
-
 function fmtLastSeen(ts) {
   if (!ts) return "—";
   const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
@@ -114,26 +108,16 @@ function Users() {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Status</th>
                   <th>Last Seen</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((u, i) => {
-                  const st = STATUS_STYLE[u.status] || STATUS_STYLE.Offline;
                   return (
                     <tr key={i}>
                       <td>{u.name}</td>
                       <td style={{ fontSize: 12, color: "#6b7280" }}>{u.email}</td>
                       <td>{u.role}</td>
-                      <td>
-                        <span style={{
-                          ...st, padding: "3px 10px",
-                          borderRadius: 999, fontSize: 12, fontWeight: 600,
-                        }}>
-                          {u.status}
-                        </span>
-                      </td>
                       <td style={{ fontSize: 12, color: "#9ca3af" }}>
                         {fmtLastSeen(u.last_seen)}
                       </td>
