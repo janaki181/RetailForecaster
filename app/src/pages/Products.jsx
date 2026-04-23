@@ -98,6 +98,7 @@ function Products() {
       </div>
 
       {/* ── KPI Cards ──────────────────────────── */}
+      <p className="section-label">Overview</p>
       <div className="kpi-grid page-kpi-grid">
         <div className="kpi-card">
           <h4>Active SKUs</h4>
@@ -120,6 +121,7 @@ function Products() {
       </div>
 
       {/* ── Main Grid ──────────────────────────── */}
+      <p className="section-label">Catalog Insights</p>
       <div className="page-grid">
         {/* Best Performing Products */}
         <div className="card">

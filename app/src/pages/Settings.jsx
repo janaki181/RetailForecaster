@@ -135,6 +135,7 @@ function Settings() {
         </p>
       )}
 
+      <p className="section-label">System Configuration</p>
       <div className="settings-grid">
         {/* Store Preferences */}
         <div className="card">

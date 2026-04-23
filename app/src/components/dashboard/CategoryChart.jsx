@@ -26,7 +26,16 @@ function CategoryChart() {
           options: {
             responsive: true,
             plugins: {
-              legend: { position: "top", labels: { font: { size: 11 } } },
+              legend: {
+                position: "top",
+                align: "end",
+                labels: {
+                  color: "#64748b",
+                  font: { size: 11, weight: "600" },
+                  padding: 14,
+                  boxWidth: 14,
+                },
+              },
               tooltip: {
                 callbacks: {
                   label: (ctx) => `${ctx.label}: ${ctx.raw}%`,
@@ -44,10 +53,15 @@ function CategoryChart() {
 
   return (
     <div className="card">
-      <h3>
-        Sales by Category{" "}
-        {loading && <span style={{ fontSize: 12, color: "#9ca3af" }}>loading…</span>}
-      </h3>
+      <p className="section-label">Category Mix</p>
+      <div className="card-head">
+        <div className="card-title-wrap">
+          <h3>Sales by Category</h3>
+          <span className="card-badge">Contribution %</span>
+        </div>
+        {loading && <span className="loading-chip">Loading...</span>}
+      </div>
+      <p className="card-meta">Share of revenue by product category</p>
       <canvas ref={canvasRef} />
     </div>
   );

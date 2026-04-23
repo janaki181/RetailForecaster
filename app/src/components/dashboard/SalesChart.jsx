@@ -46,7 +46,17 @@ function SalesChart() {
             responsive: true,
             interaction: { mode: "index", intersect: false },
             plugins: {
-              legend: { display: true, position: "top" },
+              legend: {
+                display: true,
+                position: "top",
+                align: "end",
+                labels: {
+                  color: "#64748b",
+                  font: { size: 11, weight: "600" },
+                  padding: 16,
+                  boxWidth: 18,
+                },
+              },
               tooltip: {
                 callbacks: {
                   label: (ctx) => `${ctx.dataset.label}: Rs ${Number(ctx.raw || 0).toLocaleString("en-IN")}`,
@@ -73,10 +83,15 @@ function SalesChart() {
 
   return (
     <div className="card">
-      <h3>
-        Sales Overview{" "}
-        {loading && <span style={{ fontSize: 12, color: "#9ca3af" }}>loading…</span>}
-      </h3>
+      <p className="section-label">Revenue Trend</p>
+      <div className="card-head">
+        <div className="card-title-wrap">
+          <h3>Sales Overview</h3>
+          <span className="card-badge">Last 30 Days</span>
+        </div>
+        {loading && <span className="loading-chip">Loading...</span>}
+      </div>
+      <p className="card-meta">Actual revenue vs ML forecast</p>
       <canvas ref={canvasRef} />
     </div>
   );

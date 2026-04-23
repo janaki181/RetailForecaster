@@ -131,6 +131,7 @@ function Sales() {
       </div>
 
       {/* ── KPI Cards ──────────────────────────── */}
+      <p className="section-label">Overview</p>
       <div className="kpi-grid page-kpi-grid">
         <div className="kpi-card">
           <h4>Today Revenue</h4>
@@ -239,6 +240,7 @@ function Sales() {
       )}
 
       {/* ── Main Grid ──────────────────────────── */}
+      <p className="section-label">Sales Activity</p>
       <div className="page-grid">
         {/* Recent Orders */}
         <div className="card">

@@ -75,6 +75,7 @@ function Users() {
       </div>
 
       {/* ── KPI Cards ──────────────────────────── */}
+      <p className="section-label">Overview</p>
       <div className="kpi-grid page-kpi-grid">
         <div className="kpi-card">
           <h4>Total Users</h4>
@@ -95,6 +96,7 @@ function Users() {
       </div>
 
       {/* ── Main Grid ──────────────────────────── */}
+      <p className="section-label">Team Directory</p>
       <div>
         {/* Team Directory */}
         <div className="card">

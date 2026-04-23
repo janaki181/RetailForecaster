@@ -47,6 +47,7 @@ function Inventory() {
       </div>
 
       {/* ── KPI Cards ──────────────────────────── */}
+      <p className="section-label">Overview</p>
       <div className="kpi-grid page-kpi-grid">
         <div className="kpi-card">
           <h4>Total Units</h4>
@@ -69,6 +70,7 @@ function Inventory() {
       </div>
 
       {/* ── Main Grid ──────────────────────────── */}
+      <p className="section-label">Inventory Insights</p>
       <div className="page-grid">
         {/* Stock by Location */}
         <div className="card">

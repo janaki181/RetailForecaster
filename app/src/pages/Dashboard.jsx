@@ -107,10 +107,13 @@ function Dashboard() {
 
   return (
     <>
-      <div className="dashboard">
+      <div className="dashboard page-shell">
         <Topbar onLogout={handleLogout} />
+
+        <p className="section-label">Overview</p>
         <KPIGrid kpis={kpis} />
 
+        <p className="section-label">Demand Forecast</p>
         <div className="chart-row">
           <SalesChart
             labels={salesTrend.labels || []}
@@ -120,6 +123,7 @@ function Dashboard() {
           <CategoryChart categories={categories} />
         </div>
 
+        <p className="section-label">Intelligence</p>
         <div className="bottom-row">
           <ProductTable topProducts={topProducts} />
           <Alerts alerts={alerts} />
