@@ -7,10 +7,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 load_dotenv()
 
 # FIXED: removed accidental "DATABASE_URL=" prefix from default value
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:abcd@localhost:5433/retail_forecaster?sslmode=disable"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 def ensure_database_exists(db_url: str) -> None:
