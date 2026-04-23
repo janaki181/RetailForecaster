@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 load_dotenv()
 
 # FIXED: removed accidental "DATABASE_URL=" prefix from default value
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
 
 
 def ensure_database_exists(db_url: str) -> None:
