@@ -144,7 +144,7 @@ function ForecastChart() {
   }, [chartData, selectedProduct, showActual, showPredicted]);
 
   const CheckBox = ({ checked, onChange, label }) => (
-    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: checked ? "#1e293b" : "#64748b", fontWeight: 600, cursor: "pointer", userSelect: "none" }}>
+    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: checked ? "#6d28d9" : "rgba(109,40,217,0.35)", fontWeight: 600, cursor: "pointer", userSelect: "none" }}>
       <div
         onClick={() => onChange(!checked)}
         style={{

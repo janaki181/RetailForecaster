@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 // FIXED: calls POST /api/auth/login, stores real JWT token.
 // Old version just saved "true" to localStorage without contacting the backend,
 // meaning any email/password worked and all API calls returned 401 Unauthorized.
@@ -29,7 +31,7 @@ function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         ? { name, email, password, role, shop_name: shopName }
         : { email, password };
 
-      const res = await fetch(`http://localhost:8000${endpoint}`, {
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(payload),
@@ -53,7 +55,7 @@ function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       onClose();
       navigate("/dashboard");
     } catch {
-      setError("Cannot reach server. Make sure the backend is running on port 8000.");
+      setError("Cannot reach server. Check VITE_API_URL and backend availability.");
     } finally {
       setLoading(false);
     }

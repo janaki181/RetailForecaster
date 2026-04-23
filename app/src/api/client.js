@@ -1,5 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-export const API_BASE = BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL || "";
+export const API_BASE = API_URL;
 
 function getToken() {
   return localStorage.getItem("rf_token");
@@ -32,7 +32,7 @@ export async function apiFetch(path, options = {}) {
     }
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${API_URL}${path}`, {
     method,
     headers: finalHeaders,
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -68,7 +68,7 @@ export async function downloadFile(path, filename) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, { headers });
+  const response = await fetch(`${API_URL}${path}`, { headers });
 
   if (await handleAuthFailure(response)) {
     return;
